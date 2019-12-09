@@ -4,6 +4,7 @@ import pygame
 import random
 import sys
 from pygame.locals import *
+import copy
 
 class Game(object):
     
@@ -41,6 +42,10 @@ class Game(object):
             if self.snake.is_collisioning(self.fruit.get_square()):
                 self.fruit.reset()
                 self.snake.append_body()
+
+            if self.snake.get_position()[0] > self.screen.get_width() or self.snake.get_position()[0] < 0 or self.snake.get_position()[1] > self.screen.get_height() or self.snake.get_position()[1] < 0:
+                pygame.quit()
+                exit(0)
 
             # RESET SCREEN
             self.screen.fill((0, 0, 0))
@@ -94,7 +99,7 @@ class Fruit(object):
 class Snake(object):
     
     def __init__(self, screen):
-        self.body = [Square(screen.get_width() // 2, screen.get_height() // 2, screen)]
+        self.body = [Square(10, 10, screen)]
         dirs = self.get_random_move_init()
         self.direction = (dirs[0], dirs[1])
         self.screen = screen
@@ -107,7 +112,8 @@ class Snake(object):
             (0, -1)
         ]
 
-        return opts[random.randint(0, len(opts) - 1)]
+        #return opts[random.randint(0, len(opts) - 1)]
+        return (1, 0)
     
     def change_direction(self, direction):
         self.direction = direction
@@ -117,16 +123,20 @@ class Snake(object):
             part.draw()
 
     def update_move(self):
-        save_list = self.body[:]
-        for part in range(0, len(self.body)):
-            sq_cr = self.body[part]
-            if part is 0:
-                sq_cr.move(self.direction[0] * 16, self.direction[1] * 16)
+        newer = []
+        for i in self.body:
+            newer.append((i.x, i.y))
+
+        for x in range(0, len(self.body)):
+            if x == 0:
+                self.body[x].move(self.direction[0] * 16, self.direction[1] * 16)
             else:
-                saved_part = save_list[part - 1]
-                sq_cr.move_to(saved_part.get_x(), saved_part.get_y())
-        
+                self.body[x].move_to(newer[x-1][0], newer[x-1][1])
     
+    def get_position(self):
+        return (self.body[0].x, self.body[0].y)
+
+
     def is_collisioning(self, square) -> bool:
         return self.body[0].is_collisioning(square.x, square.y)
 
@@ -156,8 +166,8 @@ class Square(object):
         return self.y
 
     def move(self, x, y):
-        self.x = self.x + x
-        self.y = self.y + y
+        self.x += x
+        self.y += y
 
     def move_to(self, x, y):
         self.x = x
