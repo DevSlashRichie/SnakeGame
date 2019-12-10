@@ -120,11 +120,7 @@ class Snake(object):
         save_list = self.body[:]
         for part in range(0, len(self.body)):
             sq_cr = self.body[part]
-            if part is 0:
-                sq_cr.move(self.direction[0] * 16, self.direction[1] * 16)
-            else:
-                saved_part = save_list[part - 1]
-                sq_cr.move_to(saved_part.get_x(), saved_part.get_y())
+            sq_cr.move(self.direction[0] * 16, self.direction[1] * 16)
         
     
     def is_collisioning(self, square) -> bool:
