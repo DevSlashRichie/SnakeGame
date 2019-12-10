@@ -4,6 +4,7 @@ import pygame
 import random
 import sys
 from pygame.locals import *
+import math
 
 class Game(object):
     
@@ -34,14 +35,22 @@ class Game(object):
                 
                 if e.type == KEYDOWN:
                     key = e.key
-                    if key == K_LEFT:
+                    if key == K_LEFT and self.snake.direction != (1, 0):
                         self.snake.change_direction((-1, 0))
-                    if key == K_RIGHT:
+                    if key == K_RIGHT and self.snake.direction != (-1, 0):
                         self.snake.change_direction((1, 0))
-                    if key == K_UP:
+                    if key == K_UP and self.snake.direction != (0, 1):
                         self.snake.change_direction((0, -1))
-                    if key == K_DOWN:
+                    if key == K_DOWN and self.snake.direction != (0, -1):
                         self.snake.change_direction((0, 1))
+                    if key == K_ESCAPE:
+                        pygame.quit()
+                        exit(0)
+                        break 
+                    if key == K_RETURN and self.lose == True:
+                        self.lose = False
+                        self.snake = Snake(self.screen)
+                        self.fruit = Fruit(self.screen)
 
             if self.snake.is_collisioning(self.fruit.get_square()):
                 self.fruit.reset()
@@ -57,20 +66,19 @@ class Game(object):
             # RESET SCREEN
             self.screen.fill((0, 0, 0))
 
-            # ADD ELEMENTS
-            self.fruit.draw()
-            self.snake.update_move()
-            self.snake.draw()
-
             self.text_pointer.set_counter(len(self.snake.body) - 3)
             self.text_pointer.draw()
 
-            ded = DeadScreen()
-
-            ded.add_text("¡Haz Perdido!", 40, (0, 0, 0))
-            ded.add_text(f"Tu puntaje fue: {self.text_pointer.counter}", 25, (0, 0, 0))
-
-            if self.lose:
+            # ADD ELEMENTS
+            self.fruit.draw()
+            
+            if not self.lose:
+                self.snake.update_move()
+                self.snake.draw()
+            else:
+                ded = DeadScreen()
+                ded.add_text("¡Haz Perdido!", 40, (0, 0, 0))
+                ded.add_text(f"Tu puntaje fue: {self.text_pointer.counter}", 25, (0, 0, 0))
                 ded.draw_screen(self.screen)
 
             pygame.display.update()
@@ -99,7 +107,12 @@ class Fruit(object):
         self.element = self.gen_element()
     
     def gen_element(self):
-        return Square(random.randrange(0, self.screen.get_width() - 1), random.randrange(0, self.screen.get_height() - 1), self.screen)
+        x, y = random.randrange(0, self.screen.get_width() - 1), random.randrange(0, self.screen.get_height() - 1)
+
+        while x+16 > self.screen.get_width() or x+16 < 0 or y+16 > self.screen.get_height() or y+16 < 0:
+            x, y = random.randrange(0, self.screen.get_width() - 1), random.randrange(0, self.screen.get_height() - 1)
+
+        return Square(x, y, self.screen)
 
     def draw(self):
         return self.element.draw()
